@@ -1,4 +1,4 @@
-# User Story 2 - Criação/Edição de perfil - Verificação de persistência
+# User Story 2 - CriaÃ§Ã£o/EdiÃ§Ã£o de perfil - VerificaÃ§Ã£o de persistÃªncia
 
 abrirSessao login=jpsauve senha=sauvejp
 expect "Jacques Sauve" getAtributoUsuario login=jpsauve atributo=nome
