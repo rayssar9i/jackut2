@@ -1,10 +1,14 @@
-package br.ufal.ic.p2.jackut;
+package br.ufal.ic.p2.jackut.models;
+
+import java.io.Serializable;
 
 /**
  * Sessao aberta de um usuario no Jackut.
- * Contem id unico e o usuario logado.
+ * Contem um id unico e a referencia ao usuario logado.
  */
-public class Sessao {
+public class Sessao implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** Identificador unico da sessao. */
     private final String id;

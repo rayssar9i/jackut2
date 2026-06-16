@@ -1,4 +1,8 @@
 import easyaccept.EasyAccept;
+
+/**
+ * Ponto de entrada para execucao dos testes de aceitacao via EasyAccept.
+ */
 public class Main {
     public static void main(String[] args) {
         String facade = "br.ufal.ic.p2.jackut.Facade";
