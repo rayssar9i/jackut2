@@ -40,6 +40,7 @@ public class AmizadeService {
             throw new AutoAmizadeException();
         }
         Usuario amigo = usuarios.buscar(loginAmigo);
+        solicitante.validarNaoInimigo(amigo);
 
         if (amigo.temConvitePendentePara(solicitante.getLogin())) {
             amigo.aceitarConvite(solicitante.getLogin());

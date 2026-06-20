@@ -5,6 +5,8 @@ import br.ufal.ic.p2.jackut.exceptions.UsuarioNaoCadastradoException;
 import br.ufal.ic.p2.jackut.models.Usuario;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -73,6 +75,25 @@ public class UsuarioRepository implements Serializable {
      */
     public boolean existe(String login) {
         return usuarios.containsKey(login);
+    }
+
+    /**
+     * Remove o usuario do login informado, se presente.
+     *
+     * @param login login do usuario a remover
+     */
+    public void remover(String login) {
+        usuarios.remove(login);
+    }
+
+    /**
+     * Retorna uma copia da colecao de usuarios, segura para iteracao mesmo
+     * durante remocoes.
+     *
+     * @return lista de todos os usuarios
+     */
+    public Collection<Usuario> todos() {
+        return new ArrayList<>(usuarios.values());
     }
 
     /** Remove todos os usuarios do repositorio. */

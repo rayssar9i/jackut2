@@ -5,6 +5,6 @@ public class LoginSenhaInvalidosException extends JackutException {
     private static final long serialVersionUID = 1L;
     /** Cria a excecao com a mensagem padrao definida para este erro. */
     public LoginSenhaInvalidosException() {
-        super("Login ou senha inv\u00e1lidos.");
+        super("Login ou senha inválidos.");
     }
 }

@@ -5,6 +5,6 @@ public class AutoAmizadeException extends JackutException {
     private static final long serialVersionUID = 1L;
     /** Cria a excecao com a mensagem padrao definida para este erro. */
     public AutoAmizadeException() {
-        super("Usu\u00e1rio n\u00e3o pode adicionar a si mesmo como amigo.");
+        super("Usuário não pode adicionar a si mesmo como amigo.");
     }
 }

@@ -1,14 +1,17 @@
 package br.ufal.ic.p2.jackut.service;
 
 import br.ufal.ic.p2.jackut.exceptions.AutoRecadoException;
+import br.ufal.ic.p2.jackut.models.Recado;
 import br.ufal.ic.p2.jackut.models.Usuario;
 import br.ufal.ic.p2.jackut.repository.UsuarioRepository;
 
 /**
  * Servico responsavel pelo envio e leitura de recados entre usuarios.
  *
- * <p>Valida a regra de que um usuario nao pode enviar recado para si mesmo e
- * delega o armazenamento/leitura ao proprio {@link Usuario} destinatario.</p>
+ * <p>Valida a regra de que um usuario nao pode enviar recado para si mesmo nem
+ * para um inimigo, e delega o armazenamento/leitura ao proprio {@link Usuario}
+ * destinatario. Cada recado guarda o remetente para permitir sua remocao ao
+ * encerramento de contas.</p>
  */
 public class RecadoService {
 
@@ -35,7 +38,9 @@ public class RecadoService {
         if (remetente.getLogin().equals(destinatario)) {
             throw new AutoRecadoException();
         }
-        usuarios.buscar(destinatario).receberRecado(recado);
+        Usuario dest = usuarios.buscar(destinatario);
+        remetente.validarNaoInimigo(dest);
+        dest.receberRecado(new Recado(remetente.getLogin(), recado));
     }
 
     /**
