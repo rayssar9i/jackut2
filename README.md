@@ -1,106 +1,125 @@
-# Jackut — Rede Social Acadêmica
+# Jackut
 
-Projeto da disciplina de **Programação 2 (P2)** do Instituto de Computação da UFAL.
+Simulação de uma rede social inspirada no Orkut, desenvolvida em Java para a disciplina de **Programação 2 (P2)** do Instituto de Computação da **UFAL**. O projeto cobre as user stories de 1 a 9 e é validado pela ferramenta de testes de aceitação **EasyAccept**.
 
-Jackut é uma rede social simplificada em Java com criação de contas, edição de perfil, sistema de amizades e envio de recados entre usuários.
+## Visão geral
 
----
+O Jackut permite criar usuários, abrir sessões, editar perfis e estabelecer diferentes relações entre pessoas: amizade, fã/ídolo, paquera e inimizade. Além disso, oferece comunidades com mensagens, troca de recados privados e remoção de contas com limpeza em cascata. Todo o estado sobrevive ao encerramento e à reabertura do sistema por meio de persistência em disco.
 
-## Funcionalidades
+## Funcionalidades por user story
 
-- **US1 — Criação de conta**: cadastro com login, senha e nome; validações de login/senha inválidos e login duplicado
-- **US2 — Edição de perfil**: atributos livres (chave-valor); qualquer atributo pode ser criado ou editado
-- **US3 — Adição de amigos**: sistema de convites; amizade confirmada apenas quando ambos os lados se adicionam
-- **US4 — Envio de recados**: fila FIFO por usuário; recados lidos em ordem de chegada
+| US | Funcionalidade |
+|----|----------------|
+| US1 | Criação de conta, abertura de sessão e consulta de atributos de perfil |
+| US2 | Edição de perfil |
+| US3 | Amizade (convites e confirmação) |
+| US4 | Recados entre usuários |
+| US5 / US6 | Comunidades (criação, descrição, dono, membros, adesão) |
+| US7 | Mensagens de comunidade |
+| US8 | Fã/ídolo, paquera e inimigo |
+| US9 | Remoção de conta com limpeza em cascata |
 
----
+## Arquitetura
 
-## Estrutura do Projeto
+O projeto segue uma arquitetura em camadas, com responsabilidades bem separadas:
 
 ```
-P2-2023.1-JACKUT/
-├── lib/
-│   └── easyaccept.jar
-├── src/
-│   ├── Main.java
-│   └── br/ufal/ic/p2/jackut/
-│       ├── Facade.java
-│       ├── Sistema.java
-│       ├── Usuario.java
-│       └── Sessao.java
-├── tests/
-│   ├── us1_1.txt / us1_2.txt
-│   ├── us2_1.txt / us2_2.txt
-│   ├── us3_1.txt / us3_2.txt
-│   └── us4_1.txt / us4_2.txt
-├── .vscode/
-│   └── settings.json
-└── out/  (gerado pela compilação)
+Facade  →  Sistema  →  Services  →  Repository  →  Models / Persistence
 ```
 
----
+- **`Facade`** — ponto de entrada do EasyAccept. Não contém regra de negócio; apenas adapta a interface dos testes e delega ao `Sistema`.
+- **`Sistema`** — orquestrador enxuto. Resolve a sessão/usuário de cada operação e encaminha ao serviço responsável.
+- **Serviços** (`service`) — concentram as regras de negócio: `AmizadeService`, `RecadoService`, `ComunidadeService`, `MensagemService`, `RelacionamentoService`, `RemocaoService`, além do `SessaoManager`.
+- **Repositórios** (`repository`) — `UsuarioRepository` e `ComunidadeRepository` encapsulam o armazenamento e as regras de unicidade.
+- **Modelos** (`models`) — entidades de domínio: `Usuario`, `Comunidade`, `Recado`, `Sessao`.
+- **Persistência** (`persistence`) — `PersistenciaManager` grava e recupera o agregado serializável `Dados` (usuários + comunidades).
+- **Exceções** (`exceptions`) — `JackutException extends RuntimeException` como base, com 22 subclasses de domínio, cada uma com a mensagem fixada no construtor.
 
-## Como Compilar e Executar
+### Estrutura de pacotes
 
-### Pré-requisitos
+```
+src/br/ufal/ic/p2/jackut/
+├── Facade.java
+├── Sistema.java
+├── package-info.java
+├── exceptions/      (JackutException + 22 subclasses)
+├── models/          (Usuario, Comunidade, Recado, Sessao)
+├── repository/      (UsuarioRepository, ComunidadeRepository)
+├── service/         (7 serviços + SessaoManager)
+└── persistence/     (Dados, PersistenciaManager)
+```
 
-- Java JDK 11 ou superior
-- PowerShell (Windows)
+## Requisitos
 
-### Compilar
+- **JDK 21**
+- **EasyAccept** (`lib/easyaccept.jar`)
+
+## Compilação
+
+**PowerShell (Windows):**
 
 ```powershell
-javac -encoding UTF-8 -parameters -cp "lib\easyaccept.jar" -d out src\br\ufal\ic\p2\jackut\*.java src\Main.java
+Get-ChildItem -Recurse src\*.java | ForEach-Object { $_.FullName } | Set-Content sources.txt
+javac -encoding UTF-8 -cp "lib\easyaccept.jar" -d bin "@sources.txt"
 ```
 
-### Executar os testes
+**Git Bash / WSL:**
+
+```bash
+javac -encoding UTF-8 -cp lib/easyaccept.jar -d bin $(find src -name "*.java")
+```
+
+> Use `-encoding UTF-8` na **compilação** (`javac`) e `-Dfile.encoding=UTF-8` na **execução** (`java`).
+
+## Execução dos testes
+
+Rodar a suíte completa, via `Main`:
 
 ```powershell
-java "-Dfile.encoding=ISO-8859-1" -cp "out;lib\easyaccept.jar" Main
+java "-Dfile.encoding=UTF-8" -cp "bin;lib\easyaccept.jar" Main
 ```
 
->  **O `-Dfile.encoding=ISO-8859-1` é obrigatório.** Os arquivos de teste estão em ISO-8859-1 e o EasyAccept compara as mensagens de erro byte a byte nesse encoding. Sem esse parâmetro, os acentos nas mensagens de exceção não batem e os testes falham.
->
->  **No PowerShell**, a flag deve estar entre aspas: `"-Dfile.encoding=ISO-8859-1"`. Sem aspas, o PowerShell quebra o argumento no `=`.
-
----
-
-## Resultado dos Testes
-
-| Arquivo    | User Story              | Testes | Resultado   |
-|------------|-------------------------|--------|-------------|
-| us1_1.txt  | Criação de conta        | 17     | ✅ PASSOU   |
-| us1_2.txt  | Persistência — conta    | 7      | ✅ PASSOU   |
-| us2_1.txt  | Edição de perfil        | 36     | ✅ PASSOU   |
-| us2_2.txt  | Persistência — perfil   | 13     | ✅ PASSOU   |
-| us3_1.txt  | Adição de amigos        | 46     | ✅ PASSOU   |
-| us3_2.txt  | Persistência — amigos   | 10     | ✅ PASSOU   |
-| us4_1.txt  | Envio de recados        | 42     | ✅ PASSOU   |
-| us4_2.txt  | Persistência — recados  | 13     | ✅ PASSOU   |
-| **TOTAL**  |                         | **184**| **184/184** |
-
----
-
-## Configuração do VS Code
-
-Os arquivos `.txt` de teste precisam estar em **ISO-8859-1**. O projeto já inclui `.vscode/settings.json` configurado para isso. Se precisar criar manualmente:
+Rodar um teste individual:
 
 ```powershell
-New-Item -ItemType Directory -Force .vscode | Out-Null
-'{"[plaintext]":{"files.encoding":"latin1"}}' | Set-Content .vscode\settings.json
+java "-Dfile.encoding=UTF-8" -cp "bin;lib\easyaccept.jar" easyaccept.EasyAccept br.ufal.ic.p2.jackut.Facade tests\us1_1.txt
 ```
 
-Se os acentos aparecerem corrompidos no editor, clique em **UTF-8** no canto inferior direito → **Reopen with Encoding** → **Western (ISO 8859-1)**. Isso é apenas visual — se os testes passam, o arquivo em disco está correto.
+Rodar um par de persistência (o `_1` grava o estado, o `_2` o reabre):
 
----
+```powershell
+java "-Dfile.encoding=UTF-8" -cp "bin;lib\easyaccept.jar" easyaccept.EasyAccept br.ufal.ic.p2.jackut.Facade tests\us5_1.txt tests\us5_2.txt
+```
+
+No Git Bash / WSL, troque o separador de classpath de `;` para `:` e as barras de `\` para `/`.
+
+## Status dos testes
+
+**18/18 arquivos · 473 asserts OK · sem falhas.**
+
+| US | Asserts |
+|----|---------|
+| US1 | 24 |
+| US2 | 49 |
+| US3 | 56 |
+| US4 | 55 |
+| US5 | 44 |
+| US6 | 35 |
+| US7 | 84 |
+| US8 | 102 |
+| US9 | 24 |
 
 ## Persistência
 
-Os dados são gravados automaticamente ao chamar `encerrarSistema()` no arquivo `jackut_dados.ser` (serialização Java). Na próxima execução os dados são carregados automaticamente. Para apagar tudo, use `zerarSistema()`.
+O estado é serializado no arquivo `jackut_dados.ser` ao encerrar o sistema (`encerrarSistema`) e recarregado na inicialização. O comando `zerarSistema` apaga esse arquivo e reinicia o estado. Mensagens de comunidade e recados privados são mantidos em filas (FIFO) independentes dentro de cada usuário.
 
----
+## Detalhes de implementação
 
-## Tecnologias
+- **Bloqueio bidirecional de inimigos:** `Usuario.validarNaoInimigo()` é verificado nas operações de adicionar amigo, adicionar ídolo, adicionar paquera e enviar recado.
+- **Paquera correspondida:** dispara um recado automático do sistema (com remetente `null`) para ambos os usuários, de modo que sobrevive à remoção de contas.
+- **Remoção em cascata:** comunidades das quais o usuário é dono são removidas (com saída dos membros), recados enviados são purgados das caixas dos destinatários e todas as referências em relações de terceiros são limpas.
+- **Encapsulamento:** as entidades retornam cópias ou listas imutáveis, sem expor as coleções internas.
 
-- Java (JDK 11+)
-- [EasyAccept](https://github.com/fbrubbo/easyaccept) — framework de testes de aceitação
+## Documentação
+
+Todas as classes, métodos, parâmetros, retornos e exceções estão documentados em Javadoc. Cada pacote possui um arquivo `package-info.java` com a descrição da sua responsabilidade.
